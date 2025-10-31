@@ -1,0 +1,59 @@
+#!/bin/bash
+
+# Convert all non-PNG images to PNG using ImageMagick
+# This script will replace the original files with PNG versions
+
+# Check if ImageMagick is installed
+if ! command -v convert &>/dev/null; then
+    echo "Error: ImageMagick is not installed. Please install it first."
+    echo "Ubuntu/Debian: sudo apt-get install imagemagick"
+    echo "macOS: brew install imagemagick"
+    exit 1
+fi
+
+# Supported image formats
+formats=("jpg" "jpeg" "gif" "bmp" "tiff" "tif" "webp" "ico" "svg")
+
+# Counter for converted files
+converted=0
+failed=0
+
+# Function to convert a single file
+convert_file() {
+    local file="$1"
+    local basename="${file%.*}"
+    local output="${basename}.png"
+
+    echo "Converting: $file -> $output"
+
+    if convert "$file" "$output"; then
+        # Only remove original if conversion was successful and output exists
+        if [ -f "$output" ]; then
+            rm "$file"
+            echo "✓ Converted and removed: $file"
+            ((converted++))
+        else
+            echo "✗ Failed: Output file not created for $file"
+            ((failed++))
+        fi
+    else
+        echo "✗ Failed to convert: $file"
+        ((failed++))
+    fi
+}
+
+# Process files in current directory
+for format in "${formats[@]}"; do
+    # Find files with current format (case-insensitive)
+    while IFS= read -r -d '' file; do
+        convert_file "$file"
+    done < <(find . -maxdepth 1 -type f \( -iname "*.${format}" \) -print0)
+done
+
+# Summary
+echo ""
+echo "================================"
+echo "Conversion complete!"
+echo "Successfully converted: $converted files"
+echo "Failed conversions: $failed files"
+echo "================================"
