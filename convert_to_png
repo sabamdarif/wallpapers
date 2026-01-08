@@ -4,7 +4,7 @@
 # This script will replace the original files with PNG versions
 
 # Check if ImageMagick is installed
-if ! command -v convert &>/dev/null; then
+if ! command -v magick &>/dev/null; then
     echo "Error: ImageMagick is not installed. Please install it first."
     echo "Ubuntu/Debian: sudo apt-get install imagemagick"
     echo "macOS: brew install imagemagick"
@@ -26,7 +26,7 @@ convert_file() {
 
     echo "Converting: $file -> $output"
 
-    if convert "$file" "$output"; then
+    if magick "$file" "$output"; then
         # Only remove original if conversion was successful and output exists
         if [ -f "$output" ]; then
             rm "$file"
